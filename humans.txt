@@ -1,0 +1,15 @@
+---
+layout: null
+---
+# humanstxt.org/
+
+/* AUTHORS */
+        Author:  {{ site.author.name }}
+        Contact: {{ site.author.email }}
+        Twitter: @{{ site.author.twitter }}
+
+/* SITE */
+        Last update: {{ "now" | date: "%Y-%m-%d %H:%M %z" }}
+        Language: English
+        Doctype: HTML5
+

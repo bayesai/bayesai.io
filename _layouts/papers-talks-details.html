@@ -1,0 +1,77 @@
+---
+layout: base
+---
+
+{% assign entry = page.entry %}
+{% assign separator = site.data.strings.separator | default:"|" %}
+{% assign nsd = site.hydejack.no_structured_data | default:site.no_structured_data %}
+
+<article class="page" role="article" {% unless nsd %}vocab="http://schema.org/" typeof="CreativeWork"{% endunless %}>
+  <meta property="mainEntityOfPage" content="{{ page.url | absolute_url }}"/>
+
+  <header>
+    <h1 class="page-title" property="name">{{ entry.title }}</h1>
+
+    <p class="post-date heading">
+      <a href="{{ '/output/' | relative_url }}">Output</a>
+      {{ separator }}
+      {% comment %}
+      {% assign output_format = site.data.strings.date_formats.output | default:"%Y-%m-%d" %}
+      <time datetime="{{ entry.date | date_to_xmlschema }}" property="datePublished">{{ entry.date | date:output_format }}</time>
+      {% endcomment %}
+      {{ entry.month | capitalize }} {{ entry.year }}
+      <span class="fr">
+        <span class="sr-only">{{ separator }} {{ site.data.strings.links | default:"Links" }}{{ site.data.strings.colon }}</span>
+        {% if entry.doi %}
+          <a class="external" href="https://doi.org/{{ entry.doi }}" property="sameAs">DOI</a>
+        {% endif %}
+        {% if entry.x-slides %}
+          <a class="external" href="{{ entry.x-slides }}">Slides</a>
+        {% endif %}
+        {% if entry.x-download %}
+          <a class="external" href="{{ entry.x-download }}" property="sameAs">Download</a>
+        {% endif %}
+        {% if entry.url %}
+          <a class="external" href="{{ entry.url }}" property="sameAs">Website</a>
+        {% endif %}
+      </span>
+      <div class="clearfix"></div>
+      {% if entry.author %}
+        <strong>Authors:</strong>
+        {{ entry.author }}
+      {% endif %}
+    </p>
+  </header>
+
+  {% if entry.abstract %}
+  <p class="message">
+    <strong>Abstract:</strong>
+    {{entry.abstract}}
+  </p>
+  {% endif %}
+
+  {{ entry.annote | markdownify }}
+
+  <h3>Citation (Chicago Manual of Style 17th edition)</h3>
+  {% reference entry.key %}
+
+  <h3>BibTeX</h3>
+  <pre>{{ entry.bibtex }}</pre>
+
+</article>
+
+<hr class="dingbat related" />
+
+{% assign addons = site.hydejack.output_addons %}
+{% unless addons %}{% assign addons = "about,newsletter" | split:"," %}{% endunless %}
+{% for addon in addons %}
+  {% case addon %}
+  {% when 'about' %}
+     {% include about.html %}
+  {% when 'newsletter' %}
+    {% include pro/newsletter.html %}
+  {% when 'other' %}
+    {% include other-outputs.html %}
+  {% else %}
+  {% endcase %}
+{% endfor %}
