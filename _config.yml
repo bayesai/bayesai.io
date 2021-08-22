@@ -1,0 +1,128 @@
+title: BayesAI
+
+description: >-
+  Machine learning, bayesian statistics and much more
+
+tagline: >-
+   Machine learning, bayesian statistics and much more
+
+copyright: © 2021 BayesAI.io. All Rights Reserved
+
+baseurl: ""
+url: ""
+
+accent_image: /assets/img/sidebar-bg.jpg
+accent_color: rgb(79,177,186)
+theme_color: rgb(25,55,71)
+
+font: Noto Sans, Helvetica, Arial, sans-serif
+font_heading: Roboto Slab, Helvetica, Arial, sans-serif
+google_fonts: Roboto+Slab:700|Noto+Sans:400,400i,700,700i
+
+legal:
+  - title: Legal and Contact
+    url: /legal+contact/
+
+favicon: /assets/icons/favicon.ico
+apple_touch_icon: /assets/icons/apple-touch-icon.png
+
+cover: false
+
+menu:
+  - title: Homepage
+    url: index
+  - title: Bayesian Modelling
+    url: /posts
+  - title: Machine Learning
+    url: /posts
+  - title: MLOPS
+    url: /posts
+  - title: Methodologies
+    url: /posts
+
+collections:
+  Bayesian Modelling:
+    permalink: "/:collection/:path/"
+    output: true
+  Machine Learning:
+    permalink: "/:collection/:path/"
+    output: true
+
+# Defaults
+defaults:
+  # _posts
+  - scope:
+      path: ""
+      type: posts
+    values:
+      comments: true
+
+exclude:
+  - README.md
+  - internal_docs
+  - Gemfile
+  - Gemfile.lock
+
+### 3rd party integrations ###
+
+# Matomo Analytics
+matomo_analytics:
+  root: "https://bayesai.matomo.cloud/"
+  site_id: 1
+  no_cookies: true
+
+# Setting a disqus shortname will enable the comment section on
+# pages with `comments: true` in the front matter.
+disqus: bayesai
+
+##############################
+
+theme: jekyll-theme-hydejack
+
+# Hydejack Settings
+# ----------------------------------------------------------------------------------------
+# These settings are specific to Hydejack.
+
+hydejack:
+  # Configure the order of complementary content on blog posts
+  post_addons: [related, comments]
+
+  # Configure the order of complementary content on project pages
+  project_addons: [other, comments]
+
+  # If you do not use Google Fonts, set to `true`.
+  no_google_fonts: false
+
+  # Set to `true` if you don't want to show an icon indicating external links
+  no_mark_external: false
+
+  # Set to `true` if third party plugins fail to work with dynamically loaded pages
+  no_push_state: false
+
+  # Set to `true` if you want to disable the drawer
+  no_drawer: false
+
+  # Set to `true` if you do not want parts of the css inlined in <head/>
+  # This *may* be benefitial when serving the site over HTTP/2.
+  no_inline_css: false
+
+  # Code blocks and tables "break" the layout by spanning the full available width.
+  # Set this to true if you want them to be the same width as other content.
+  no_break_layout: false
+
+  # Set to `true` if you do not want to expose your resume and projects
+  # in machine-readable formats.
+  no_structured_data: false
+
+  # You can set this to `true` if you don't want to set the `theme-color` meta tag,
+  # This only affects the meta tag, not the color specified in the app manifest.
+  no_theme_color: false
+
+  # Set to `true` when building with the `--lsi` option
+  use_lsi: false
+
+plugins:
+  - jekyll-feed
+  - jekyll-scholar
+  - jekyll-seo-tag
+  - jekyll-sitemap
