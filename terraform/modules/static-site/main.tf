@@ -28,27 +28,30 @@ resource "aws_route53_record" "record" {
     evaluate_target_health = true
   }
 }
-resource "aws_s3_bucket" "logging" {
-  bucket        = "${var.domain_name}-logs"
-  force_destroy = var.force_destroy_buckets
-  grant {
-    id          = data.aws_canonical_user_id.current_user.id
-    type        = "CanonicalUser"
-    permissions = ["FULL_CONTROL"]
-  }
-  grant {
-    type        = "Group"
-    permissions = ["READ", "WRITE"]
-    uri         = "http://acs.amazonaws.com/groups/s3/LogDelivery"
-  }
-  grant {
-    # AWS Logs Delivery account: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
-    id          = "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0"
-    permissions = ["FULL_CONTROL"]
-    type        = "CanonicalUser"
-  }
-  tags = merge(var.tags, var.tags_s3_bucket_logging, { Name = "CloudFront logs for ${var.domain_name}" })
-}
+
+# DISABLE LOGGING
+# resource "aws_s3_bucket" "logging" {
+#   bucket        = "${var.domain_name}-logs"
+#   force_destroy = var.force_destroy_buckets
+#   grant {
+#     id          = data.aws_canonical_user_id.current_user.id
+#     type        = "CanonicalUser"
+#     permissions = ["FULL_CONTROL"]
+#   }
+#   grant {
+#     type        = "Group"
+#     permissions = ["READ", "WRITE"]
+#     uri         = "http://acs.amazonaws.com/groups/s3/LogDelivery"
+#   }
+#   grant {
+#     # AWS Logs Delivery account: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
+#     id          = "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0"
+#     permissions = ["FULL_CONTROL"]
+#     type        = "CanonicalUser"
+#   }
+#   tags = merge(var.tags, var.tags_s3_bucket_logging, { Name = "CloudFront logs for ${var.domain_name}" })
+# }
+
 resource "aws_s3_bucket" "content" {
   count         = var.create_content_bucket ? 1 : 0
   bucket        = local.content_bucket_name
@@ -91,18 +94,23 @@ resource "aws_cloudfront_origin_access_identity" "oai" {
   count   = local.create_oai ? 1 : 0
   comment = "OAI for ${var.domain_name}"
 }
+
 module "cloudfront" {
-  source  = "USSBA/cloudfront/aws"
-  version = "~> 4.1"
+  source  = "../aws-cloudfront"
 
   ipv6_enabled = true
   aliases      = [var.domain_name]
 
   default_root_object = var.default_subdirectory_object
 
-  logging_enabled = true
+  logging_enabled = false  # logging disabled
+  # logging_config = {
+  #   bucket          = aws_s3_bucket.logging.id
+  #   prefix          = "cloudfront/"
+  #   include_cookies = true
+  # }
   logging_config = {
-    bucket          = aws_s3_bucket.logging.id
+    bucket          = "does_not_exist_because_disabled"
     prefix          = "cloudfront/"
     include_cookies = true
   }
@@ -150,6 +158,9 @@ module "cloudfront" {
   }
   tags = merge(var.tags, var.tags_cloudfront, { Name = "Cloudfront for ${var.domain_name}" })
 }
+
+## END TEMP COMMENT
+
 resource "aws_cloudfront_function" "subdirectory_index" {
   count   = var.index_redirect || var.index_redirect_no_extension ? 1 : 0
   name    = "${replace(var.domain_name, ".", "-")}-subdirectory-index"
