@@ -159,8 +159,6 @@ module "cloudfront" {
   tags = merge(var.tags, var.tags_cloudfront, { Name = "Cloudfront for ${var.domain_name}" })
 }
 
-## END TEMP COMMENT
-
 resource "aws_cloudfront_function" "subdirectory_index" {
   count   = var.index_redirect || var.index_redirect_no_extension ? 1 : 0
   name    = "${replace(var.domain_name, ".", "-")}-subdirectory-index"
