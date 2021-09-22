@@ -62,6 +62,11 @@ variable "github_app_installation_id" {
 ######
 # CI #
 ######
+
+variable enable_ci {
+  type        = bool
+  default     = false
+}
 variable "ci_shell" {
   type        = string
   default     = "bash"

@@ -143,7 +143,7 @@ module "terraform_ci_cd" {
   ]
 
   cd_post_build_commands = [
-    "aws cloudfront create-invalidation --distribution-id E1Y8NDTC76DFC6 --paths '/*'",
+    "aws cloudfront create-invalidation --distribution-id ${module.external_bucket_static_site.cloudfront_distribution.id} --paths '/*'",
     "echo Build completed on `date`",
   ]
 }
