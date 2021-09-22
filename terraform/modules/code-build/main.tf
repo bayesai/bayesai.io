@@ -202,6 +202,7 @@ module "ci_codebuild_role" {
 }
 
 resource "aws_codebuild_webhook" "ci" {
+  count = var.enable_ci ? 1 : 0
   project_name = aws_codebuild_project.ci.name
 
   filter_group {
@@ -220,17 +221,20 @@ resource "aws_codebuild_webhook" "ci" {
 }
 
 resource "aws_iam_role_policy" "ci_main" {
+  count = var.enable_ci ? 1 : 0
   name   = "${module.ci_codebuild_role.role_name}-main"
   role   = module.ci_codebuild_role.role_name
   policy = data.aws_iam_policy_document.this.json
 }
 
 resource "aws_iam_role_policy_attachment" "ci_administrator_access" {
+  count = var.enable_ci ? 1 : 0
   role       = module.ci_codebuild_role.role_name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "ci_ecr" {
+  count = var.enable_ci ? 1 : 0
   role       = module.ci_codebuild_role.role_name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }

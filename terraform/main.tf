@@ -75,6 +75,7 @@ module "terraform_ci_cd" {
   project           = var.project
   environment       = var.environment
   owner             = var.owner
+  enable_ci         = false
 
   source_repository_url = "https://github.com/bayesai/bayesai.io"
 
@@ -90,6 +91,7 @@ module "terraform_ci_cd" {
     # },
   ]
 
+  ### These commands are run when a new PR is created ###
   ci_install_commands = [
     "echo 'custom command 1'",
     "echo 'custom command 2'",
@@ -110,21 +112,22 @@ module "terraform_ci_cd" {
     "echo 'custom command 2'",
   ]
 
+  ### These commands are run on a commit to master ###
   cd_env_var = [
-    {
-      "name"  = "MY_SECRET"
-      "value" = "MY_SECRET_VALUE"
-    },
-    {
-      "name"  = "MY_SECRET_2"
-      "value" = "MY_SECRET_VALUE_2"
-      "type"  = "PARAMETER_STORE"
-    },
+    # {
+    #   "name"  = "MY_SECRET"
+    #   "value" = "MY_SECRET_VALUE"
+    # },
+    # {
+    #   "name"  = "MY_SECRET_2"
+    #   "value" = "MY_SECRET_VALUE_2"
+    #   "type"  = "PARAMETER_STORE"
+    # },
   ]
 
   cd_install_commands = [
-    "echo 'custom command 1'",
-    "echo 'custom command 2'",
+    "gem install jekyll bundler",
+    "bundle",
   ]
 
   cd_pre_build_commands = [
@@ -133,13 +136,15 @@ module "terraform_ci_cd" {
   ]
 
   cd_build_commands = [
-    "echo 'custom command 1'",
-    "echo 'custom command 2'",
+    "echo '******** Building Jekyll site ********'",
+    "JEKYLL_ENV=production jekyll build",
+    "echo '******** Uploading to S3 ********'",
+    "aws s3 sync _site/ s3://bayesai-io-${var.environment}-content-bucket"
   ]
 
   cd_post_build_commands = [
-    "echo 'custom command 1'",
-    "echo 'custom command 2'",
+    "aws cloudfront create-invalidation --distribution-id E1Y8NDTC76DFC6 --paths '/*'",
+    "echo Build completed on `date`",
   ]
 }
 
@@ -147,7 +152,7 @@ module "terraform_ci_cd" {
 # STATIC SITE
 # ------------------------------------------------------------------------------
 resource "aws_s3_bucket" "content" {
-  bucket = "bayesai-io-prod-content-bucket"
+  bucket = "bayesai-io-${var.environment}-content-bucket"
 }
 
 data "aws_iam_policy_document" "content" {
