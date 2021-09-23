@@ -38,3 +38,8 @@ variable "acm_certificate_arn" {
   description = "SSL certificate ARN in certificate manager"
   default     = ""
 }
+
+variable "domain_name" {
+  type        = string
+  description = "The domain name for the website."
+}

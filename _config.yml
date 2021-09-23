@@ -62,6 +62,7 @@ exclude:
   - internal_docs
   - Gemfile
   - Gemfile.lock
+  - terraform
 
 ### 3rd party integrations ###
 

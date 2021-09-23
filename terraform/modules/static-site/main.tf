@@ -68,6 +68,11 @@ resource "aws_s3_bucket" "content" {
       max_age_seconds = 3000
     }
   }
+
+  website {
+    index_document = "index.html"
+    error_document = "404.html"
+  }
 }
 data "aws_s3_bucket" "content" {
   count  = var.create_content_bucket ? 0 : 1

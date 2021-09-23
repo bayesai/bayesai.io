@@ -151,38 +151,19 @@ module "terraform_ci_cd" {
 # ------------------------------------------------------------------------------
 # STATIC SITE
 # ------------------------------------------------------------------------------
-resource "aws_s3_bucket" "content" {
-  bucket = "bayesai-io-${var.environment}-content-bucket"
-}
-
-data "aws_iam_policy_document" "content" {
-  # Grant read to the module's OAI
-  statement {
-    actions   = ["s3:GetObject"]
-    resources = ["${module.external_bucket_static_site.content_bucket_arn}/*"]
-    principals {
-      type        = "AWS"
-      identifiers = [module.external_bucket_static_site.cloudfront_oai_iam_arn]
-    }
-  }
-}
-resource "aws_s3_bucket_policy" "content" {
-  bucket = aws_s3_bucket.content.id
-  policy = data.aws_iam_policy_document.content.json
-}
 
 module "external_bucket_static_site" {
   source = "./modules/static-site"
-  domain_name = "bayesai.io"
+  domain_name = var.domain_name
 
   acm_certificate_arn = var.acm_certificate_arn
 
   # Optional
   hosted_zone_id               = var.hosted_zone
   default_subdirectory_object  = "index.html"
-  create_content_bucket        = false
-  manage_content_bucket_policy = false
-  content_bucket_name          = aws_s3_bucket.content.id
+  create_content_bucket        = true
+  manage_content_bucket_policy = true
+  content_bucket_name          = "bayesai-io-${var.environment}-content-bucket"
   force_destroy_buckets        = true
   tags                         = merge( local.common_tags, local.extra_tags)
 }
