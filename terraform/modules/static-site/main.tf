@@ -69,10 +69,6 @@ resource "aws_s3_bucket" "content" {
     }
   }
 
-  website {
-    index_document = "index.html"
-    error_document = "404.html"
-  }
 }
 data "aws_s3_bucket" "content" {
   count  = var.create_content_bucket ? 0 : 1
@@ -123,7 +119,7 @@ module "cloudfront" {
   # TLS Configuration
   viewer_certificate = {
     acm_certificate_arn      = var.acm_certificate_arn
-    minimum_protocol_version = "TLSv1.2_2018"
+    minimum_protocol_version = "TLSv1.2_2021"
     ssl_support_method       = "sni-only"
     iam_certificate_id       = ""
   }

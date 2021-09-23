@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Legal and Contact
-permalink: /legal+contact/
+permalink: /legal_contact/
 ---
   
 **BayesAi.io are Internet Domains used by:**

@@ -7,6 +7,25 @@ resource "aws_cloudfront_distribution" "distribution" {
   # wheather or not the distribution is enabled
   enabled = var.enabled
 
+  custom_error_response {
+    error_caching_min_ttl = "0"
+    error_code            = "400"
+    response_code         = "200"
+    response_page_path    = "/404.html"
+  }
+  custom_error_response {
+    error_caching_min_ttl = "0"
+    error_code            = "404"
+    response_code         = "200"
+    response_page_path    = "/404.html"
+  }
+  custom_error_response {
+    error_caching_min_ttl = "0"
+    error_code            = "403"
+    response_code         = "200"
+    response_page_path    = "/404.html"
+  }
+
   # wheather or not IPV6 is enabled
   is_ipv6_enabled = var.ipv6_enabled
 

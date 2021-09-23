@@ -139,7 +139,7 @@ module "terraform_ci_cd" {
     "echo '******** Building Jekyll site ********'",
     "JEKYLL_ENV=production jekyll build",
     "echo '******** Uploading to S3 ********'",
-    "aws s3 sync _site/ s3://bayesai-io-${var.environment}-content-bucket"
+    "aws s3 sync --delete _site/ s3://bayesai-io-${var.environment}-content-bucket"
   ]
 
   cd_post_build_commands = [
@@ -160,6 +160,7 @@ module "external_bucket_static_site" {
 
   # Optional
   hosted_zone_id               = var.hosted_zone
+  index_redirect               = true
   default_subdirectory_object  = "index.html"
   create_content_bucket        = true
   manage_content_bucket_policy = true
