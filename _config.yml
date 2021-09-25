@@ -63,6 +63,7 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - terraform
+  - notebooks
 
 ### 3rd party integrations ###
 
