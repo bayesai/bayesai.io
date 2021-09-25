@@ -20,3 +20,4 @@ domain_name = "bayesai.io"
 
 #### Code build variables ####
 
+s3_state_bucket = "bayesai-terraform-state-bucket"

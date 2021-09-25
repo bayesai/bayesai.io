@@ -12,12 +12,12 @@ output "artifact_s3_bucket_arn" {
 # CI #
 ######
 output "ci_project_name" {
-  value       = aws_codebuild_project.ci.name
+  value       = try(aws_codebuild_project.ci[0].name, null)
   description = "The name of CI codebuild project"
 }
 
 output "ci_project_arn" {
-  value       = aws_codebuild_project.ci.arn
+  value       = try(aws_codebuild_project.ci[0].arn, null)
   description = "The ARN of CI codebuild project"
 }
 

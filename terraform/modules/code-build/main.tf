@@ -144,6 +144,7 @@ resource "aws_s3_bucket_public_access_block" "block_public_access" {
 # CI #
 ######
 resource "aws_codebuild_project" "ci" {
+  count = var.enable_ci ? 1 : 0
   name          = "${local.name}-ci"
   description   = "Build project on ${var.project} infra repository which run Terraform CI"
   service_role  = module.ci_codebuild_role.role_arn
@@ -203,7 +204,7 @@ module "ci_codebuild_role" {
 
 resource "aws_codebuild_webhook" "ci" {
   count = var.enable_ci ? 1 : 0
-  project_name = aws_codebuild_project.ci.name
+  project_name = try(aws_codebuild_project.ci[0].name, null)
 
   filter_group {
     # only build PRs
