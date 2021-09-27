@@ -1,5 +1,13 @@
+# Terraform metadata
+.terraform
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+
+# Site metadata
 _site
 .sass-cache
 .jekyll-cache
 .jekyll-metadata
 vendor
+
