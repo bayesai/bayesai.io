@@ -31,13 +31,17 @@ cover: false
 menu:
   - title: Homepage
     url: index
-  - title: Bayesian Modelling
+  - title: Graphical Models
     url: /posts
-  - title: Machine Learning
+  - title: Deep Learning
     url: /posts
-  - title: MLOPS
+  - title: Reinforcement Learning
     url: /posts
-  - title: Methodologies
+  - title: Causal Modelling
+    url: /posts
+  - title: Baysian Statistics
+    url: /posts
+  - title: ML Ops
     url: /posts
 
 collections:
@@ -56,6 +60,7 @@ defaults:
       type: posts
     values:
       comments: true
+      usemathjax: true
 
 exclude:
   - README.md
@@ -76,6 +81,9 @@ matomo_analytics:
 # Setting a disqus shortname will enable the comment section on
 # pages with `comments: true` in the front matter.
 disqus: bayesai
+
+# Build settings
+markdown: kramdown
 
 ##############################
 
