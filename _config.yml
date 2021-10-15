@@ -23,6 +23,10 @@ legal:
   - title: Legal and Contact
     url: /legal_contact/
 
+comments:
+  - title: Comments
+    url: /comments/
+
 favicon: /assets/icons/favicon.ico
 apple_touch_icon: /assets/icons/apple-touch-icon.png
 

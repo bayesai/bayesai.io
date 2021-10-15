@@ -28,7 +28,11 @@ from IPython.display import Image
 
 
 ```python
-df = pd.read_csv(notebook_path+'data/titanic.csv')
+import io
+import requests
+url="https://github.com/thisisjasonjafari/my-datascientise-handcode/raw/master/005-datavisualization/titanic.csv"
+s=requests.get(url).content
+df=pd.read_csv(io.StringIO(s.decode('utf-8')))
 df = df[['Survived','Pclass','Sex','Age','SibSp','Parch','Fare','Embarked']]
 df_train = df.dropna().copy()
 df_test = df.drop(df_train.index).copy()
@@ -327,7 +331,9 @@ $$\textbf{Definition  5.1.2}$$: We can say that $$P$$ satisfies our local indepe
 
 * Lets now connect a probability distribution $$P$$ with our BN graph $$G$$. 
 
-$$\textbf{Definition 5.2.1}$$: Let $$G$$ be a BN graph over the variables $$X_1,\ldots, X_n$$. We say that a distribution $$P$$ over the same space factorizes according to $$G$$ if $$P$$ can be expressed as a product $$
+$$\textbf{Definition 5.2.1}$$: Let $$G$$ be a BN graph over the variables $$X_1,\ldots, X_n$$. We say that a distribution $$P$$ over the same space factorizes according to $$G$$ if $$P$$ can be expressed as a product 
+
+$$
 \begin{equation}P(X_1,\ldots,X_n) = \prod_{i=1}^n P(X_i|Pa_{X_i})
 \end{equation}$$
 
@@ -346,7 +352,8 @@ $$
 \begin{equation}
 P(X_1,\ldots,X_n) = \prod_{i=1}^n P(X_i|X_1,\ldots,X_{i-1})
 \end{equation}
-$$.
+\label{eq2}
+$$
 
 It suffices to consider a a single factor $$
 \begin{equation}
@@ -358,7 +365,10 @@ $$
 \begin{equation}
 P(X_i|X_1,\ldots,X_{i-1}) = P(X_i|Pa_{X_i},Z) = P(X_i |Pa_{X_i})
 \end{equation}
-$$. We repeat this for each factor to obtain the required result. 
+\label{eq3}
+$$
+
+We repeat this for each factor to obtain the required result. 
 
 ### Section 5.4: Factorisation implies I-map
 
@@ -370,8 +380,42 @@ $$\textbf{Theorem 5.4.1}$$: Let $$G$$ be a BN structure over a set of random var
 \begin{equation}
 X_i \perp ND_{X_i}|Pa_{X_i}
 \end{equation}
-$$. Start by marginalising over the variables which are the descendants of $$X_i$$ so that all we have left is $$X_i, Pa_{X_i} and ND_{X_i}$$. Do this by working backwards in the topological ordering of the vertices. In order from highest in the order to lowest. As an example consider we are looking at $$C$$ in the distribution $$P(A,B,C,D,E) = P(A)P(B)P(C|A,B)P(D|A)P(E|C)$$ in the topological ordering $$E$$ is a descendant of $$C$$ so to we can elimininate it to find $$P(A,B,C,D) = P(A)P(B)P(C|A,B)P(D|A)\sum_{e} P(E|C)$$ and since $$P(E|C) = 1$$ we get $$P(A,B,C,D) = P(A)P(B)P(C|A,B)P(D|A).$$ Graphically we can think of this as pruning the nodes below $$X_i$$ or $$C$$ in our example. Now let the remaining vertices (in $$X_i, Pa_{X_i} and ND_{X_i}$$) be numbered $$X_1,\ldots,X_{i-1},X_{i},X_{i+1},\ldots,X_N$$. We know that since $$P$$ factorizes over $$G$$ $$P(X_1,\ldots,X_N) = \prod_{j=1}^N P(X_j|Pa_{X_j})$$ and we want to show that $$P(X_{i}|X_1,\ldots,X_{i-1},X_{i+1},\ldots,X_N) = P(X_{i}|Pa_{X_i})$$. Now  
-we know that $$P(X_{i}|X_1,\ldots,X_{i-1},X_{i+1},\ldots,X_N) = \frac{P(X_1,\ldots ,X_i,\ldots,X_N)}{P(X_1,\ldots,X_{i-1},X_{i+1},\ldots,X_{N})} = \frac{\prod_{j=1}^{N} P(X_j|pa_{X_i})}{\sum_{X_i}\prod_{j=1}^{N} P(X_j|pa_{X_i})} = \frac{P(X_{i}|Pa_{X_i}) \prod_{j=1,j \neq i}^{N} P(X_j|pa_{X_i})}{\prod_{j=1,j \neq i}^{N} P(X_j|pa_{X_i})} = P(X_i|Pa_{X_i}).$$
+$$. Start by marginalising over the variables which are the descendants of $$X_i$$ so that all we have left is $$X_i, Pa_{X_i} and ND_{X_i}$$. Do this by working backwards in the topological ordering of the vertices. In order from highest in the order to lowest. As an example consider we are looking at $$C$$ in the distribution $$P(A,B,C,D,E) = P(A)P(B)P(C|A,B)P(D|A)P(E|C)$$ in the topological ordering $$E$$ is a descendant of $$C$$ so to we can elimininate it to find $$P(A,B,C,D) = P(A)P(B)P(C|A,B)P(D|A)\sum_{e} P(E|C)$$ and since $$P(E|C) = 1$$ we get 
+
+$$
+\begin{equation}
+P(A,B,C,D) = P(A)P(B)P(C|A,B)P(D|A).
+\end{equation}
+\label{eq4}
+$$ 
+
+Graphically we can think of this as pruning the nodes below $$X_i$$ or $$C$$ in our example. Now let the remaining vertices (in $$X_i, Pa_{X_i} and ND_{X_i}$$) be numbered 
+$$
+\begin{equation}
+X_1,\ldots,X_{i-1},X_{i},X_{i+1},\ldots,X_N.
+\end{equation}
+\label{eq5}
+$$ We know that since $$P$$ factorizes over $$G$$ 
+
+$$
+\begin{equation}
+P(X_1,\ldots,X_N) = \prod_{j=1}^N P(X_j|Pa_{X_j})
+\end{equation}
+\label{eq6}
+$$
+
+and we want to show that 
+
+$$
+\begin{equation}
+P(X_{i}|X_1,\ldots,X_{i-1},X_{i+1},\ldots,X_N) = P(X_{i}|Pa_{X_i})
+\end{equation}
+\label{eq7}
+$$ 
+
+Now we know that 
+
+$$P(X_{i}|X_1,\ldots,X_{i-1},X_{i+1},\ldots,X_N) = \frac{P(X_1,\ldots ,X_i,\ldots,X_N)}{P(X_1,\ldots,X_{i-1},X_{i+1},\ldots,X_{N})} = \frac{\prod_{j=1}^{N} P(X_j|pa_{X_i})}{\sum_{X_i}\prod_{j=1}^{N} P(X_j|pa_{X_i})} = \frac{P(X_{i}|Pa_{X_i}) \prod_{j=1,j \neq i}^{N} P(X_j|pa_{X_i})}{\prod_{j=1,j \neq i}^{N} P(X_j|pa_{X_i})} = P(X_i|Pa_{X_i}).$$
 
 ## Section 6: Summary
 
