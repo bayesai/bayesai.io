@@ -122,12 +122,12 @@ resource "aws_s3_bucket" "artifact" {
 
   tags = merge(
     var.additional_tags,
-    map("Name", local.name),
-    map("Project", var.project),
-    map("Owner", var.owner),
-    map("Description", format("Artifact bucket for %s CodeBuild projects", local.name)),
-    map("Environment", var.environment),
-    map("ManagedBy", "terraform")
+    {"Name" = local.name},
+    {"Project" = var.project},
+    {"Owner" = var.owner},
+    {"Description" = format("Artifact bucket for %s CodeBuild projects", local.name)},
+    {"Environment" = var.environment},
+    {"ManagedBy" = "terraform"}
   )
 }
 
@@ -135,7 +135,7 @@ resource "aws_s3_bucket_public_access_block" "block_public_access" {
   bucket = aws_s3_bucket.artifact.id
 
   block_public_acls       = true
-  block_public_policy     = true
+  block_public_policy     = false
   restrict_public_buckets = true
   ignore_public_acls      = true
 }
@@ -180,10 +180,10 @@ resource "aws_codebuild_project" "ci" {
 
   tags = merge(
     var.additional_tags,
-    map("Project", var.project),
-    map("Owner", var.owner),
-    map("Environment", var.environment),
-    map("ManagedBy", "terraform")
+    {"Project" = var.project},
+    {"Owner" = var.owner},
+    {"Environment" = var.environment},
+    {"ManagedBy" = "terraform"}
   )
 }
 
@@ -202,24 +202,24 @@ module "ci_codebuild_role" {
   aws_service = "codebuild.amazonaws.com"
 }
 
-resource "aws_codebuild_webhook" "ci" {
-  count = var.enable_ci ? 1 : 0
-  project_name = try(aws_codebuild_project.ci[0].name, null)
-
-  filter_group {
-    # only build PRs
-    filter {
-      type    = "EVENT"
-      pattern = "PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED,PULL_REQUEST_REOPENED"
-    }
-
-    # only build PRs to master
-    filter {
-      type    = "BASE_REF"
-      pattern = "refs/heads/master"
-    }
-  }
-}
+#resource "aws_codebuild_webhook" "ci" {
+#  count = var.enable_ci ? 1 : 0
+#  project_name = try(aws_codebuild_project.ci[0].name, null)
+#
+#  filter_group {
+#    # only build PRs
+#    filter {
+#      type    = "EVENT"
+#      pattern = "PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED,PULL_REQUEST_REOPENED"
+#    }
+#
+#    # only build PRs to master
+#    filter {
+#      type    = "BASE_REF"
+#      pattern = "refs/heads/master"
+#    }
+#  }
+#}
 
 resource "aws_iam_role_policy" "ci_main" {
   count = var.enable_ci ? 1 : 0
@@ -279,10 +279,10 @@ resource "aws_codebuild_project" "cd" {
 
   tags = merge(
     var.additional_tags,
-    map("Project", var.project),
-    map("Owner", var.owner),
-    map("Environment", var.environment),
-    map("ManagedBy", "terraform")
+    {"Project" = var.project},
+    {"Owner" = var.owner},
+    {"Environment" = var.environment},
+    {"ManagedBy" = "terraform"}
   )
 }
 
@@ -301,23 +301,23 @@ module "cd_codebuild_role" {
   aws_service = "codebuild.amazonaws.com"
 }
 
-resource "aws_codebuild_webhook" "cd" {
-  project_name = aws_codebuild_project.cd.name
-
-  filter_group {
-    # only build push events
-    filter {
-      type    = "EVENT"
-      pattern = "PUSH"
-    }
-
-    # only build pushes to master
-    filter {
-      type    = "HEAD_REF"
-      pattern = "refs/heads/master"
-    }
-  }
-}
+#resource "aws_codebuild_webhook" "cd" {
+#  project_name = aws_codebuild_project.cd.name
+#
+#  filter_group {
+#    # only build push events
+#    filter {
+#      type    = "EVENT"
+#      pattern = "PUSH"
+#    }
+#
+#    # only build pushes to master
+#    filter {
+#      type    = "HEAD_REF"
+#      pattern = "refs/heads/master"
+#    }
+#  }
+#}
 
 resource "aws_iam_role_policy" "cd_main" {
   name   = "${module.cd_codebuild_role.role_name}-main"

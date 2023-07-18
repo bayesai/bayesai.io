@@ -8,7 +8,6 @@ module "static_site" {
   version = "~> 2.0"
 
   domain_name = "static.example.com"
-  acm_certificate_arn = "arn:aws:acm:us-east-1:123412341234:certificate/1234abcd-1234-abcd-1234-abcd1234abcd"
 
   # Optional
   hosted_zone_id = "Z0123456789ABCDEFGHIJ"
@@ -33,7 +32,6 @@ module "static_site" {
 ### Required
 
 * `domain_name` - The domain name of your site
-* `acm_certificate_arn` - The ACM cert matching your domain name to feed into cloudfront
 
 ### Optional
 

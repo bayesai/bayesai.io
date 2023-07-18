@@ -1,32 +1,23 @@
+provider "cloudflare" {
+  api_user_service_key = "ZZZZZZZ"
+}
+
 data "aws_canonical_user_id" "current_user" {}
 locals {
   content_bucket_name = coalesce(var.content_bucket_name, "${var.domain_name}-static-content")
   content_bucket      = var.create_content_bucket ? aws_s3_bucket.content[0] : data.aws_s3_bucket.content[0]
 
-  # CloudFront OAI Info
-  create_oai                          = var.cloudfront_oai_id == ""
-  cloudfront_oai_id                   = local.create_oai ? aws_cloudfront_origin_access_identity.oai[0].id : var.cloudfront_oai_id
-  cloudfront_oai_iam_arn              = "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${local.cloudfront_oai_id}"
-  cloudfront_oai_access_identity_path = "origin-access-identity/cloudfront/${local.cloudfront_oai_id}"
-
-  cloudfront_allowed_methods_map = {
-    get : ["GET", "HEAD"]
-    get_options : ["GET", "HEAD", "OPTIONS"]
-    all : ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
-  }
-  cloudfront_allowed_methods = local.cloudfront_allowed_methods_map[var.cloudfront_allowed_methods]
-
 }
-resource "aws_route53_record" "record" {
-  count   = var.hosted_zone_id != "" ? 1 : 0
-  zone_id = var.hosted_zone_id
-  name    = var.domain_name
-  type    = "A"
-  alias {
-    name                   = module.cloudfront.distribution.domain_name
-    zone_id                = module.cloudfront.distribution.hosted_zone_id
-    evaluate_target_health = true
+
+resource "aws_s3_bucket" "root_bucket" {
+  bucket = "${local.content_bucket_name}"
+  acl    = "private"
+
+  website {
+    redirect_all_requests_to = "https://www.bayesai.io"
   }
+
+  tags          = merge(var.tags, var.tags_s3_bucket_content, { Name = "${var.domain_name} Web Root Redirect" })
 }
 
 # DISABLE LOGGING
@@ -54,125 +45,72 @@ resource "aws_route53_record" "record" {
 
 resource "aws_s3_bucket" "content" {
   count         = var.create_content_bucket ? 1 : 0
-  bucket        = local.content_bucket_name
+  bucket        = "www.${local.content_bucket_name}"
   force_destroy = var.force_destroy_buckets
   tags          = merge(var.tags, var.tags_s3_bucket_content, { Name = "${var.domain_name} Static Content" })
 
-  dynamic "cors_rule" {
-    for_each = length(var.cors_allowed_origins) > 0 ? ["create"] : []
-    content {
-      allowed_headers = var.cors_allowed_headers
-      allowed_methods = var.cors_allowed_methods
-      allowed_origins = var.cors_allowed_origins
-      expose_headers  = []
-      max_age_seconds = 3000
+  acl    = "private"
+  
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+        "Sid": "AllowIPmix",
+        "Effect": "Allow",
+        "Principal": "*",
+        "Action": "s3:GetObject",
+        "Resource": [
+            "arn:aws:s3:::www.bayesai.io",
+            "arn:aws:s3:::www.bayesai.io/*"
+        ],
+        "Condition": {
+            "IpAddress": {
+                "aws:SourceIp": [
+                  "173.245.48.0/20",
+                  "103.21.244.0/22",
+                  "103.22.200.0/22",
+                  "103.31.4.0/22",
+                  "141.101.64.0/18",
+                  "108.162.192.0/18",
+                  "190.93.240.0/20",
+                  "188.114.96.0/20",
+                  "197.234.240.0/22",
+                  "198.41.128.0/17",
+                  "162.158.0.0/15",
+                  "104.16.0.0/13",
+                  "104.24.0.0/14",
+                  "172.64.0.0/13",
+                  "131.0.72.0/22",
+                  "2400:cb00::/32",
+                  "2606:4700::/32",
+                  "2803:f800::/32",
+                  "2405:b500::/32",
+                  "2405:8100::/32",
+                  "2a06:98c0::/29",
+                  "2c0f:f248::/32"
+              ]
+            }
+        }
+    }
+  ]
+}
+POLICY
+
+  cors_rule {
+    allowed_headers = ["Authorization", "Content-Length"]
+    allowed_methods = ["GET", "POST"]
+    allowed_origins = ["https://www.bayesai.io"]
+    max_age_seconds = 3000
+  }
+
+  website {
+      index_document = "index.html"
+      error_document = "404.html"
     }
   }
 
-}
 data "aws_s3_bucket" "content" {
   count  = var.create_content_bucket ? 0 : 1
-  bucket = local.content_bucket_name
-}
-# Static Bucket Policy
-data "aws_iam_policy_document" "content" {
-  # Grant read to cloudfront's OAI
-  statement {
-    actions   = ["s3:GetObject"]
-    resources = ["${local.content_bucket.arn}/*"]
-    principals {
-      type        = "AWS"
-      identifiers = [local.cloudfront_oai_iam_arn]
-    }
-  }
-}
-resource "aws_s3_bucket_policy" "content" {
-  count  = var.manage_content_bucket_policy ? 1 : 0
-  bucket = local.content_bucket.id
-  policy = data.aws_iam_policy_document.content.json
-}
-resource "aws_cloudfront_origin_access_identity" "oai" {
-  count   = local.create_oai ? 1 : 0
-  comment = "OAI for ${var.domain_name}"
-}
-
-module "cloudfront" {
-  source  = "../aws-cloudfront"
-
-  ipv6_enabled = true
-  aliases      = [var.domain_name]
-
-  default_root_object = var.default_subdirectory_object
-
-  logging_enabled = false  # logging disabled
-  # logging_config = {
-  #   bucket          = aws_s3_bucket.logging.id
-  #   prefix          = "cloudfront/"
-  #   include_cookies = true
-  # }
-  logging_config = {
-    bucket          = "does_not_exist_because_disabled"
-    prefix          = "cloudfront/"
-    include_cookies = true
-  }
-
-  # TLS Configuration
-  viewer_certificate = {
-    acm_certificate_arn      = var.acm_certificate_arn
-    minimum_protocol_version = "TLSv1.2_2021"
-    ssl_support_method       = "sni-only"
-    iam_certificate_id       = ""
-  }
-
-  s3_origins = [
-    {
-      origin_id              = local.content_bucket_name
-      domain_name            = local.content_bucket.bucket_regional_domain_name
-      origin_access_identity = local.cloudfront_oai_access_identity_path
-    },
-  ]
-
-  # Default behavior
-  default_cache_behavior = {
-    allowed_methods                = local.cloudfront_allowed_methods
-    cached_methods                 = ["GET", "HEAD"]
-    origin_id                      = local.content_bucket_name
-    default_ttl                    = var.default_ttl
-    min_ttl                        = var.min_ttl
-    max_ttl                        = var.max_ttl
-    viewer_protocol_policy         = "redirect-to-https" # allow-all, https-only, redirect-to-https
-    forward_cookies                = "all"
-    forward_cookies_whitelist      = []
-    forward_headers                = length(var.cors_allowed_origins) > 0 ? ["Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"] : []
-    forward_querystring            = true
-    forward_querystring_cache_keys = []
-    function_association = flatten([
-      var.hsts_header != "" ? [{
-        event_type   = "viewer-response"
-        function_arn = aws_cloudfront_function.security_headers_response[0].arn
-      }] : [],
-      var.index_redirect || var.index_redirect_no_extension ? [{
-        event_type   = "viewer-request"
-        function_arn = aws_cloudfront_function.subdirectory_index[0].arn
-      }] : [],
-    ])
-  }
-  tags = merge(var.tags, var.tags_cloudfront, { Name = "Cloudfront for ${var.domain_name}" })
-}
-
-resource "aws_cloudfront_function" "subdirectory_index" {
-  count   = var.index_redirect || var.index_redirect_no_extension ? 1 : 0
-  name    = "${replace(var.domain_name, ".", "-")}-subdirectory-index"
-  runtime = "cloudfront-js-1.0"
-  comment = "${terraform.workspace} Subdirectory Index"
-  publish = true
-  code    = replace(replace(replace(file("${path.module}/subdirectory.js"), "TRAILING_SLASH_TO_INDEX", var.index_redirect), "NO_FILE_EXTENSION_TO_INDEX", var.index_redirect_no_extension), "DEFAULT_INDEX", var.default_subdirectory_object)
-}
-resource "aws_cloudfront_function" "security_headers_response" {
-  count   = var.hsts_header != "" ? 1 : 0
-  name    = "${replace(var.domain_name, ".", "-")}-security-headers"
-  runtime = "cloudfront-js-1.0"
-  comment = "${terraform.workspace} Security Headers Injection on viewer-response"
-  publish = true
-  code    = replace(file("${path.module}/hsts.js"), "HEADER_VALUE", var.hsts_header)
+  bucket = "www.${local.content_bucket_name}"
 }

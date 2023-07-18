@@ -54,7 +54,8 @@ data "aws_iam_policy_document" "this" {
     ]
 
     resources = [
-      "arn:aws:ssm:*:*:parameter/tvlk-secret/terraform-cicd/terraform-cicd/github-token",
+      "arn:aws:secretsmanager:us-east-1:133809944111:secret:github-token-EctL6h"
+      #"arn:aws:ssm:*:*:parameter/tvlk-secret/terraform-cicd/terraform-cicd/github-token",
     ]
   }
 

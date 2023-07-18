@@ -4,7 +4,7 @@ description: >-
   Machine learning, bayesian statistics and much more
 
 tagline: >-
-   Machine learning, bayesian statistics and much more
+  Machine learning, bayesian statistics and much more
 
 copyright: © 2021 BayesAI.io. All Rights Reserved
 
@@ -36,17 +36,17 @@ menu:
   - title: Homepage
     url: index
   - title: Graphical Models
-    url: /posts
+    url: /posts.html
   - title: Deep Learning
-    url: /posts
+    url: /posts.html
   - title: Reinforcement Learning
-    url: /posts
+    url: /posts.html
   - title: Causal Modelling
-    url: /posts
+    url: /posts.html
   - title: Baysian Statistics
-    url: /posts
+    url: /posts.html
   - title: ML Ops
-    url: /posts
+    url: /posts.html
 
 collections:
   Bayesian Modelling:

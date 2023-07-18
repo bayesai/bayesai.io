@@ -1,7 +1,3 @@
-variable "acm_certificate_arn" {
-  type        = string
-  description = "Required: An ACM certificate ARN that will be associated with the CloudFront distribution."
-}
 variable "default_subdirectory_object" {
   type        = string
   description = "If you want all subdirectories to route `/` to a file, the CloudFront function will be created to support this; ex: `index.html`"
@@ -41,11 +37,6 @@ variable "manage_content_bucket_policy" {
   description = "Optional: If you want to manage the bucket policy external to this module, set this to false.  In that case, you will be responsible for configuring the bucket to allow the OAI to read from the bucket."
   default     = true
 }
-variable "cloudfront_oai_id" {
-  type        = string
-  description = "Optional: If you already have an OAI created and don't want another one, provide the ID for it"
-  default     = ""
-}
 variable "force_destroy_buckets" {
   type        = bool
   description = "Optional: If set to true, buckets will be deleted on module destroy, regardless of data in those buckets.  Defaults to false"
@@ -77,17 +68,7 @@ variable "tags_s3_bucket_content" {
   description = "Optional; Map of additional key-value tags to apply to the s3 bucket containing the static website content"
   default     = {}
 }
-variable "tags_cloudfront" {
-  type        = map(any)
-  description = "Optional; Map of key-value tags to apply to the cloudfront distribution"
-  default     = {}
-}
 
-variable "cloudfront_allowed_methods" {
-  type        = string
-  description = "Optional; Configure the allowed_methods of cloudfront.  Allowed values are 'get', 'get_options', 'all'.  For more information, see AWS documentation: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudfront-distribution-defaultcachebehavior.html#cfn-cloudfront-distribution-defaultcachebehavior-allowedmethods"
-  default     = "all"
-}
 
 # CORS Config
 variable "cors_allowed_origins" {
