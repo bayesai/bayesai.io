@@ -6,7 +6,7 @@ description: >-
 tagline: >-
   Machine learning, bayesian statistics and much more
 
-copyright: © 2021 BayesAI.io. All Rights Reserved
+copyright: © 2023 BayesAI.io. All Rights Reserved
 
 baseurl: ""
 url: ""
@@ -33,8 +33,6 @@ apple_touch_icon: /assets/icons/apple-touch-icon.png
 cover: false
 
 menu:
-  - title: Homepage
-    url: index
   - title: Graphical Models
     url: /posts.html
   - title: Deep Learning
